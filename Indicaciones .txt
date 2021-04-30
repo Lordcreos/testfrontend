@@ -1,0 +1,4 @@
+abrir la consola 
+
+colocar "npm install"
+colocar "npm start" 
