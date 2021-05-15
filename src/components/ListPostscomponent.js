@@ -17,9 +17,11 @@ export const ListPostsComponent = (props) => {
   const { mode, clickLetter } = props;
   const [posts, setPosts] = useState([])
   const [comments, setComments] = useState([])
+  const [hashtags, setHashtags] = useState([])
   const [loading, setLoading] = useState(false);
   const [perfilVisible, setPerfilVisible] = useState(false);
   const [perfilId, setPerfilId] = useState("");
+  const [perfil, setPerfil] = useState([])
   const [comentVisible, setcomentVisible] = useState(false);
   const [comentId, setcomentId] = useState("");
   const [hashtagVisible, sethashtagVisible] = useState(false);
@@ -27,42 +29,28 @@ export const ListPostsComponent = (props) => {
   const [likesVisible, setlikesVisible] = useState(false);
   const [likesId, setlikesId] = useState("");
 
-  const LogPosts = () => {
-    console.log(getComments);
-  }
-
   const showPerfil = (id) => {
     setPerfilId(id)
     setPerfilVisible(true)
+    fetchDummyData(`user/${id}`,setLoading, setPerfil);
   }
-  const showComents = (id) => {
-    setcomentId(id)
-    setcomentVisible(true)
-    const getComments = (id) => {
-      fetchDummyData(`/post/${id}/comment`)
-        .then((res) => setComments(res?.data))
-        .catch()
-        .finally();
-    };
-    const handlemirar = (id) => {
-       getComments(id);
-      
-    };
-    
+  const showComents = async (id) => {
+    setcomentId(id);
+    setcomentVisible(true);
+    fetchDummyData(`post/${id}/comment`,setLoading,setComments);
   }
+
   const showHashtags = (id) => {
     sethashtagId(id)
     sethashtagVisible(true)
+    fetchDummyData(`post/${id}/comment`,setLoading,setHashtags);
   }
+
   const showLikes = (id) => {
     setlikesId(id)
     setlikesVisible(true)
   }
-
-
-
   
-
   const handleOk = () => {
     setPerfilVisible(false);
     setcomentVisible(false);
@@ -75,20 +63,12 @@ export const ListPostsComponent = (props) => {
     setcomentVisible(false);
     sethashtagVisible(false);
     setlikesVisible(false);
+    setComments([]);
   };
-  const getComments = (postId) => {
-    fetchDummyData(`/post/${postId}/comment`)
-      .then((res) => setComments(res?.data))
-      .catch()
-      .finally();
-  };
-  const handlemirar = (id) => {
-     getComments(id);
-    
-  };
+
+
   useEffect(() => {
-    fetchDummyData(`post?page=${1}&limit=${10}`, setLoading, setPosts)
-    /* /user/{userId} */
+    fetchDummyData(`post?page=${1}&limit=${10}`, setLoading, setPosts);
   }, [])
 
   return (
@@ -101,26 +81,19 @@ export const ListPostsComponent = (props) => {
         
 
       </Modal>
-      <Modal title="coment" visible={comentVisible} onOk={handleOk} onCancel={handleCancel} onmirar={handlemirar}>
-        <p>Some contents...</p>
-        <p>Some contentsaasdaasdasdsdasdasdaas...</p>
-        <p>Some contents...{comentId}</p>
+      <Modal title="coment" visible={comentVisible} onOk={handleOk} onCancel={handleCancel}>
         <Row >
         {comments.map((comment) => 
           <Col flex="1 1 20px " key={comment.id}>
-            <Card
-              style={{ width: 300 }}
-              
-              
-            >
+            <Card style={{ width: 300 }}>
               <Meta
-                avatar={<Avatar src={comment.owner.owner} />}
-                title={`${comment.owner.publishDate} `}
+                avatar={<Avatar src={comment.owner.picture} />}
+                title={`${comment.publishDate} `}
                 description={comment.message}
-                onClick={()=>{showComents(comment.owner.id)}}/>
+                onClick={()=>{showComents(comment.id)}}/>
             </Card>
           </Col>
-        ) }: null
+        ) }
         
       </Row>
        
@@ -151,7 +124,7 @@ export const ListPostsComponent = (props) => {
                 />
               }
               actions={[
-                <CommentOutlined key="comments" onClick={()=>{showComents(post.owner.id)}} />,
+                <CommentOutlined key="comments" onClick={()=>{showComents(post.id)}} />,
                 <NumberOutlined key="hashtag" onClick={()=>{showHashtags(post.owner.id)}}/>,
                 <HeartOutlined key="likes" onClick={()=>{showLikes(post.owner.id)}}/>,
               ]}
